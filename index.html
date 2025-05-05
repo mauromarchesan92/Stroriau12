@@ -4,280 +4,491 @@
 
 <head>
 
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz con Invio Email</title>
 
-<title>Verifica – Il mondo diviso in due</title>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
-<style>
+  <script>
 
-  body { font-family: Arial, sans-serif; margin: 20px; padding: 0; }
+    // Inizializza EmailJS con la tua chiave pubblica
 
-  .container { max-width: 800px; margin: auto; }
+    (function() {
 
-  h1 { text-align: center; }
+      emailjs.init("orLnix6b43o8KC9NW"); // <-- La tua Public Key
 
-  .question { margin-bottom: 1em; }
+    })();
 
-  .question p { font-weight: bold; }
+  </script>
 
-  label { display: block; margin-left: 20px; cursor: pointer; }
+  <style>
 
-  .correct { background-color: #c8e6c9; }   /* verde chiaro */
+    body { font-family: Arial; padding: 20px; }
 
-  .incorrect { background-color: #ffcdd2; } /* rosso chiaro */
+    .question { margin-bottom: 15px; }
 
-  #result { margin-top: 20px; font-weight: bold; }
+    .question p { margin-bottom: 5px; font-weight: bold; }
 
-  button { margin: 10px 5px; padding: 8px 12px; }
+    #sendEmail {
 
-</style>
+      margin-top: 20px;
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    }
+
+  </style>
 
 </head>
 
 <body>
 
-<div class="container">
+  <label>Nome: <input type="text" id="studentName" required></label><br>
 
-  <h1>Verifica – Il mondo diviso in due</h1>
+  <label>Classe: <input type="text" id="studentClass" required></label><br>
 
-  <label>Nome e cognome: <input type="text" id="studentName"></label>
+  <label>Data: <input type="date" id="date" required></label><br><br>
 
-  <label>Classe: <input type="text" id="studentClass"></label>
 
-  <label>Data: <input type="text" id="date"></label>
 
-  <hr>
+ <!-- Domande a scelta multipla -->
 
-  <!-- Domande a scelta multipla -->
  <div class="question">
+
     <p>1. Quando scoppia la Guerra di Corea?</p>
+
     <label><input type="radio" name="q1" data-correct="false"> 1945</label>
+
     <label><input type="radio" name="q1" data-correct="true"> 1950</label>
+
     <label><input type="radio" name="q1" data-correct="false"> 1953</label>
-  </div>
-  <div class="question">
-    <p>2. In quale anno l’URSS invade l’Ungheria?</p>
-    <label><input type="radio" name="q2" data-correct="false"> 1953</label>
-    <label><input type="radio" name="q2" data-correct="true"> 1956</label>
-    <label><input type="radio" name="q2" data-correct="false"> 1960</label>
-  </div>
-  <div class="question">
-    <p>3. In quale anno viene fondata l’ONU?</p>
-    <label><input type="radio" name="q3" data-correct="true"> 1945</label>
-    <label><input type="radio" name="q3" data-correct="false"> 1948</label>
-    <label><input type="radio" name="q3" data-correct="false"> 1951</label>
-  </div>
-  <div class="question">
-    <p>4. Quando si conclude la Guerra del Vietnam?</p>
-    <label><input type="radio" name="q4" data-correct="false"> 1973</label>
-    <label><input type="radio" name="q4" data-correct="true"> 1975</label>
-    <label><input type="radio" name="q4" data-correct="false"> 1978</label>
-  </div>
-  <div class="question">
-    <p>5. In quale anno viene costruito il Muro di Berlino?</p>
-    <label><input type="radio" name="q5" data-correct="false"> 1958</label>
-    <label><input type="radio" name="q5" data-correct="true"> 1961</label>
-    <label><input type="radio" name="q5" data-correct="false"> 1965</label>
-  </div>
-  <div class="question">
-    <p>6. Il Piano Marshall fu finanziato da:</p>
-    <label><input type="radio" name="q6" data-correct="false"> Regno Unito</label>
-    <label><input type="radio" name="q6" data-correct="true"> Stati Uniti</label>
-    <label><input type="radio" name="q6" data-correct="false"> Unione Sovietica</label>
-  </div>
-  <div class="question">
-    <p>7. La Guerra del Vietnam si concluse con:</p>
-    <label><input type="radio" name="q7" data-correct="false"> Vittoria degli Stati Uniti</label>
-    <label><input type="radio" name="q7" data-correct="false"> Vittoria del Vietnam del Sud</label>
-    <label><input type="radio" name="q7" data-correct="true"> Vittoria del Vietnam del Nord</label>
-  </div>
-  <div class="question">
-    <p>8. La Cina maoista era caratterizzata da:</p>
-    <label><input type="radio" name="q8" data-correct="true"> Comunismo e maoismo</label>
-    <label><input type="radio" name="q8" data-correct="false"> Consumismo e autoritarismo</label>
-    <label><input type="radio" name="q8" data-correct="false"> Pacifismo e internazionalismo</label>
-  </div>
-  <div class="question">
-    <p>9. Uno degli obiettivi principali dell’ONU era:</p>
-    <label><input type="radio" name="q9" data-correct="false"> Contrastare la diffusione del comunismo</label>
-    <label><input type="radio" name="q9" data-correct="false"> Favorire la ripresa economica</label>
-    <label><input type="radio" name="q9" data-correct="true"> Tutelare la pace e i diritti umani</label>
-  </div>
-  <div class="question">
-    <p>10. Nel 1949 il territorio della Germania fu:</p>
-    <label><input type="radio" name="q10" data-correct="true"> Diviso in due Stati</label>
-    <label><input type="radio" name="q10" data-correct="false"> Posto sotto mandato ONU</label>
-    <label><input type="radio" name="q10" data-correct="false"> Occupato interamente dall’URSS</label>
-  </div>
-  <div class="question">
-    <p>11. Nel 1959 a Cuba prese il potere ______ che si alleò con ____.</p>
-    <label><input type="radio" name="q11" data-correct="true"> Fidel Castro; i Sovietici</label>
-    <label><input type="radio" name="q11" data-correct="false"> Fidel Castro; gli Americani</label>
-    <label><input type="radio" name="q11" data-correct="false"> Francisco Franco; i Sovietici</label>
-  </div>
-  <div class="question">
-    <p>12. Dopo il 1944, quale valuta divenne riferimento internazionale?</p>
-    <label><input type="radio" name="q12" data-correct="false"> La sterlina britannica</label>
-    <label><input type="radio" name="q12" data-correct="true"> Il dollaro statunitense</label>
-    <label><input type="radio" name="q12" data-correct="false"> Il rublo sovietico</label>
-  </div>
-  <div class="question">
-    <p>13. Chi guidò l’URSS dopo la morte di Stalin?</p>
-    <label><input type="radio" name="q13" data-correct="false"> Lenin</label>
-    <label><input type="radio" name="q13" data-correct="true"> Nikita Khrushchev</label>
-    <label><input type="radio" name="q13" data-correct="false"> Leonid Breznev</label>
-  </div>
-  <div class="question">
-    <p>14. La NATO è un’alleanza militare di paesi:</p>
-    <label><input type="radio" name="q14" data-correct="true"> Paesi occidentali</label>
-    <label><input type="radio" name="q14" data-correct="false"> Paesi orientali</label>
-    <label><input type="radio" name="q14" data-correct="false"> Paesi non allineati</label>
-  </div>
-  <div class="question">
-    <p>15. Chi fu il leader del movimento per i diritti civili degli Afroamericani negli anni Sessanta?</p>
-    <label><input type="radio" name="q15" data-correct="true"> Martin Luther King</label>
-    <label><input type="radio" name="q15" data-correct="false"> Malcolm X</label>
-    <label><input type="radio" name="q15" data-correct="false"> Nelson Mandela</label>
-  </div>
-  <div class="question">
-    <p>16. Chi fu l’artefice del “Grande balzo in avanti” in Cina?</p>
-    <label><input type="radio" name="q16" data-correct="true"> Mao Zedong</label>
-    <label><input type="radio" name="q16" data-correct="false"> Deng Xiaoping</label>
-    <label><input type="radio" name="q16" data-correct="false"> Zhou Enlai</label>
-  </div>
-  <div class="question">
-    <p>17. La Comunità Economica Europea nacque come alleanza di paesi:</p>
-    <label><input type="radio" name="q17" data-correct="true"> Europei</label>
-    <label><input type="radio" name="q17" data-correct="false"> Mondiali</label>
-    <label><input type="radio" name="q17" data-correct="false"> Asiatici</label>
-  </div>
-  <div class="question">
-    <p>18. In che anno si tenne la Conferenza di Yalta?</p>
-    <label><input type="radio" name="q18" data-correct="false"> 1943</label>
-    <label><input type="radio" name="q18" data-correct="true"> 1945</label>
-    <label><input type="radio" name="q18" data-correct="false"> 1947</label>
-  </div>
-  <div class="question">
-    <p>19. In che anno ebbe luogo la Conferenza di Potsdam?</p>
-    <label><input type="radio" name="q19" data-correct="true"> 1945</label>
-    <label><input type="radio" name="q19" data-correct="false"> 1946</label>
-    <label><input type="radio" name="q19" data-correct="false"> 1948</label>
-  </div>
-  <div class="question">
-    <p>20. Nel referendum del 1946 l’Italia scelse come forma di governo:</p>
-    <label><input type="radio" name="q20" data-correct="false"> Monarchia</label>
-    <label><input type="radio" name="q20" data-correct="true"> Repubblica</label>
-    <label><input type="radio" name="q20" data-correct="false"> Impero</label>
-  </div>
-  <div class="question">
-    <p>21. Chi fu il presidente degli USA durante l’escalation della guerra in Vietnam?</p>
-    <label><input type="radio" name="q21" data-correct="false"> John F. Kennedy</label>
-    <label><input type="radio" name="q21" data-correct="true"> Lyndon B. Johnson</label>
-    <label><input type="radio" name="q21" data-correct="false"> Richard Nixon</label>
-  </div>
-  <div class="question">
-    <p>22. Come si concluse la Guerra di Corea?</p>
-    <label><input type="radio" name="q22" data-correct="false"> Vittoria degli USA</label>
-    <label><input type="radio" name="q22" data-correct="true"> Armistizio</label>
-    <label><input type="radio" name="q22" data-correct="false"> Vittoria della Cina</label>
-  </div>
-  <div class="question">
-    <p>23. Il Patto di Varsavia riuniva paesi:</p>
-    <label><input type="radio" name="q23" data-correct="false"> Nato (occidentali)</label>
-    <label><input type="radio" name="q23" data-correct="true"> Oriental-sovietici</label>
-    <label><input type="radio" name="q23" data-correct="false"> Non allineati</label>
-  </div>
-  <div class="question">
-    <p>24. Negli anni Sessanta la crisi di Cuba del 1962 vide contrapposti _____ e _____.</p>
-    <label><input type="radio" name="q24" data-correct="true"> URSS e USA</label>
-    <label><input type="radio" name="q24" data-correct="false"> Cina e USA</label>
-    <label><input type="radio" name="q24" data-correct="false"> URSS e Cina</label>
+
   </div>
 
-  <!-- Pulsanti Azioni -->
+  <div class="question">
+
+    <p>2. In quale anno l’URSS invade l’Ungheria?</p>
+
+    <label><input type="radio" name="q2" data-correct="false"> 1953</label>
+
+    <label><input type="radio" name="q2" data-correct="true"> 1956</label>
+
+    <label><input type="radio" name="q2" data-correct="false"> 1960</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>3. In quale anno viene fondata l’ONU?</p>
+
+    <label><input type="radio" name="q3" data-correct="true"> 1945</label>
+
+    <label><input type="radio" name="q3" data-correct="false"> 1948</label>
+
+    <label><input type="radio" name="q3" data-correct="false"> 1951</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>4. Quando si conclude la Guerra del Vietnam?</p>
+
+    <label><input type="radio" name="q4" data-correct="false"> 1973</label>
+
+    <label><input type="radio" name="q4" data-correct="true"> 1975</label>
+
+    <label><input type="radio" name="q4" data-correct="false"> 1978</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>5. In quale anno viene costruito il Muro di Berlino?</p>
+
+    <label><input type="radio" name="q5" data-correct="false"> 1958</label>
+
+    <label><input type="radio" name="q5" data-correct="true"> 1961</label>
+
+    <label><input type="radio" name="q5" data-correct="false"> 1965</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>6. Il Piano Marshall fu finanziato da:</p>
+
+    <label><input type="radio" name="q6" data-correct="false"> Regno Unito</label>
+
+    <label><input type="radio" name="q6" data-correct="true"> Stati Uniti</label>
+
+    <label><input type="radio" name="q6" data-correct="false"> Unione Sovietica</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>7. La Guerra del Vietnam si concluse con:</p>
+
+    <label><input type="radio" name="q7" data-correct="false"> Vittoria degli Stati Uniti</label>
+
+    <label><input type="radio" name="q7" data-correct="false"> Vittoria del Vietnam del Sud</label>
+
+    <label><input type="radio" name="q7" data-correct="true"> Vittoria del Vietnam del Nord</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>8. La Cina maoista era caratterizzata da:</p>
+
+    <label><input type="radio" name="q8" data-correct="true"> Comunismo e maoismo</label>
+
+    <label><input type="radio" name="q8" data-correct="false"> Consumismo e autoritarismo</label>
+
+    <label><input type="radio" name="q8" data-correct="false"> Pacifismo e internazionalismo</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>9. Uno degli obiettivi principali dell’ONU era:</p>
+
+    <label><input type="radio" name="q9" data-correct="false"> Contrastare la diffusione del comunismo</label>
+
+    <label><input type="radio" name="q9" data-correct="false"> Favorire la ripresa economica</label>
+
+    <label><input type="radio" name="q9" data-correct="true"> Tutelare la pace e i diritti umani</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>10. Nel 1949 il territorio della Germania fu:</p>
+
+    <label><input type="radio" name="q10" data-correct="true"> Diviso in due Stati</label>
+
+    <label><input type="radio" name="q10" data-correct="false"> Posto sotto mandato ONU</label>
+
+    <label><input type="radio" name="q10" data-correct="false"> Occupato interamente dall’URSS</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>11. Nel 1959 a Cuba prese il potere ______ che si alleò con ____.</p>
+
+    <label><input type="radio" name="q11" data-correct="true"> Fidel Castro; i Sovietici</label>
+
+    <label><input type="radio" name="q11" data-correct="false"> Fidel Castro; gli Americani</label>
+
+    <label><input type="radio" name="q11" data-correct="false"> Francisco Franco; i Sovietici</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>12. Dopo il 1944, quale valuta divenne riferimento internazionale?</p>
+
+    <label><input type="radio" name="q12" data-correct="false"> La sterlina britannica</label>
+
+    <label><input type="radio" name="q12" data-correct="true"> Il dollaro statunitense</label>
+
+    <label><input type="radio" name="q12" data-correct="false"> Il rublo sovietico</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>13. Chi guidò l’URSS dopo la morte di Stalin?</p>
+
+    <label><input type="radio" name="q13" data-correct="false"> Lenin</label>
+
+    <label><input type="radio" name="q13" data-correct="true"> Nikita Khrushchev</label>
+
+    <label><input type="radio" name="q13" data-correct="false"> Leonid Breznev</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>14. La NATO è un’alleanza militare di paesi:</p>
+
+    <label><input type="radio" name="q14" data-correct="true"> Paesi occidentali</label>
+
+    <label><input type="radio" name="q14" data-correct="false"> Paesi orientali</label>
+
+    <label><input type="radio" name="q14" data-correct="false"> Paesi non allineati</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>15. Chi fu il leader del movimento per i diritti civili degli Afroamericani negli anni Sessanta?</p>
+
+    <label><input type="radio" name="q15" data-correct="true"> Martin Luther King</label>
+
+    <label><input type="radio" name="q15" data-correct="false"> Malcolm X</label>
+
+    <label><input type="radio" name="q15" data-correct="false"> Nelson Mandela</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>16. Chi fu l’artefice del “Grande balzo in avanti” in Cina?</p>
+
+    <label><input type="radio" name="q16" data-correct="true"> Mao Zedong</label>
+
+    <label><input type="radio" name="q16" data-correct="false"> Deng Xiaoping</label>
+
+    <label><input type="radio" name="q16" data-correct="false"> Zhou Enlai</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>17. La Comunità Economica Europea nacque come alleanza di paesi:</p>
+
+    <label><input type="radio" name="q17" data-correct="true"> Europei</label>
+
+    <label><input type="radio" name="q17" data-correct="false"> Mondiali</label>
+
+    <label><input type="radio" name="q17" data-correct="false"> Asiatici</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>18. In che anno si tenne la Conferenza di Yalta?</p>
+
+    <label><input type="radio" name="q18" data-correct="false"> 1943</label>
+
+    <label><input type="radio" name="q18" data-correct="true"> 1945</label>
+
+    <label><input type="radio" name="q18" data-correct="false"> 1947</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>19. In che anno ebbe luogo la Conferenza di Potsdam?</p>
+
+    <label><input type="radio" name="q19" data-correct="true"> 1945</label>
+
+    <label><input type="radio" name="q19" data-correct="false"> 1946</label>
+
+    <label><input type="radio" name="q19" data-correct="false"> 1948</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>20. Nel referendum del 1946 l’Italia scelse come forma di governo:</p>
+
+    <label><input type="radio" name="q20" data-correct="false"> Monarchia</label>
+
+    <label><input type="radio" name="q20" data-correct="true"> Repubblica</label>
+
+    <label><input type="radio" name="q20" data-correct="false"> Impero</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>21. Chi fu il presidente degli USA durante l’escalation della guerra in Vietnam?</p>
+
+    <label><input type="radio" name="q21" data-correct="false"> John F. Kennedy</label>
+
+    <label><input type="radio" name="q21" data-correct="true"> Lyndon B. Johnson</label>
+
+    <label><input type="radio" name="q21" data-correct="false"> Richard Nixon</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>22. Come si concluse la Guerra di Corea?</p>
+
+    <label><input type="radio" name="q22" data-correct="false"> Vittoria degli USA</label>
+
+    <label><input type="radio" name="q22" data-correct="true"> Armistizio</label>
+
+    <label><input type="radio" name="q22" data-correct="false"> Vittoria della Cina</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>23. Il Patto di Varsavia riuniva paesi:</p>
+
+    <label><input type="radio" name="q23" data-correct="false"> Nato (occidentali)</label>
+
+    <label><input type="radio" name="q23" data-correct="true"> Oriental-sovietici</label>
+
+    <label><input type="radio" name="q23" data-correct="false"> Non allineati</label>
+
+  </div>
+
+  <div class="question">
+
+    <p>24. Negli anni Sessanta la crisi di Cuba del 1962 vide contrapposti _____ e _____.</p>
+
+    <label><input type="radio" name="q24" data-correct="true"> URSS e USA</label>
+
+    <label><input type="radio" name="q24" data-correct="false"> Cina e USA</label>
+
+    <label><input type="radio" name="q24" data-correct="false"> URSS e Cina</label>
+
+  </div>
+
+
+
+<!-- Pulsanti Azioni -->
+
   <button id="checkBtn">Correggi risposte</button>
 
   <button id="exportBtn">Esporta risposte</button>
 
+
+
   <div id="result"></div>
 
-</div>
 
-<script>
 
-document.getElementById('checkBtn').addEventListener('click', function() {
+  <button id="sendEmail">Invia Risposte via Email</button>
 
-  let score = 0;
 
-  for (let i = 1; i <= 24; i++) {
-    let choices = document.getElementsByName('q' + i);
-    let answered = false;
 
-    for (let ch of choices) {
-      ch.parentElement.classList.remove('correct','incorrect');
-    }
+  <script>
 
-    for (let ch of choices) {
-      if (ch.checked) {
-        answered = true;
-        if (ch.getAttribute('data-correct') === 'true') {
-          score++;
-          ch.parentElement.classList.add('correct');
-        } else {
-          ch.parentElement.classList.add('incorrect');
-          for (let alt of choices) {
-            if (alt.getAttribute('data-correct') === 'true') {
-              alt.parentElement.classList.add('correct');
-            }
-          }
-        }
-      }
-    }
+  document.getElementById('sendEmail').addEventListener('click', function () {
+
+  const name = document.getElementById('studentName').value;
+
+  const classe = document.getElementById('studentClass').value;
+
+  const date = document.getElementById('date').value;
+
+
+
+  if (!name || !classe || !date) {
+
+    alert("Tutti i campi devono essere compilati!");
+
+    return;
+
   }
 
-  document.getElementById('result').innerText = "Hai totalizzato " + score + " punti su 24.";
-});
 
-document.getElementById('exportBtn').addEventListener('click', function () {
-  // Crea un'istanza di jsPDF
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
 
-  let text = "Nome: " + document.getElementById('studentName').value + "\n" +
-             "Classe: " + document.getElementById('studentClass').value + "\n" +
-             "Data: " + document.getElementById('date').value + "\n\n";
+  let text = `Nome: ${name}\nClasse: ${classe}\nData: ${date}\n\n`;
 
-  // Aggiungi testo iniziale al PDF
-  doc.text(text, 10, 10);
 
-  let yOffset = 30;  // Posizione verticale di partenza
 
-  // Aggiungi le risposte delle domande
-  for (let i = 1; i <= 24; i++) {
-    let question = document.querySelectorAll('.question')[i - 1].querySelector('p').innerText;
-    let choices = document.getElementsByName('q' + i);
-    let selected = Array.from(choices).find(ch => ch.checked);
+  const questions = document.querySelectorAll('.question');
+
+  let unanswered = false;
+
+
+
+  questions.forEach((q, index) => {
+
+    const questionText = q.querySelector('p').innerText;
+
+    const choices = q.querySelectorAll('input[type="radio"]');
+
+    let selected = Array.from(choices).find(c => c.checked);
+
+    let correct = Array.from(choices).find(c => c.dataset.correct === "true");
+
+
+
     let answer = selected ? selected.parentElement.innerText.trim() : "Nessuna risposta";
 
-    // Trova la risposta corretta
-    let correctAnswer = Array.from(choices).find(ch => ch.getAttribute('data-correct') === 'true').parentElement.innerText.trim();
+    let correctAnswer = correct ? correct.parentElement.innerText.trim() : "Non definita";
 
-    text = `${i}. ${question}\nRisposta: ${answer}\nRisposta corretta: ${correctAnswer}\n\n`;
 
-    // Aggiungi la domanda e le risposte al PDF
-    doc.text(text, 10, yOffset);
-    yOffset += 40;  // Spazio verticale per la prossima domanda
+
+    if (!selected) unanswered = true;  // Se c'è una domanda senza risposta
+
+
+
+    text += `${index + 1}. ${questionText}\nRisposta: ${answer}\nRisposta corretta: ${correctAnswer}\n\n`;
+
+  });
+
+
+
+  if (unanswered) {
+
+    alert("Per favore rispondi a tutte le domande!");
+
+    return;
+
   }
 
-  // Esporta il PDF
-  doc.save("risposte_verifica.pdf");
+
+
+emailjs.send("service_7kem7ei", "template_4uytzdn", {
+
+  from_name: name,          // Questo mappa {{from_name}} nel template
+
+  to_name: "Prof. Marchesan", // Questo mappa {{to_name}} nel template
+
+  reply_to: "mauro.marchesan@icrilke.edu.it",
+
+  student_class: classe,    // Questo mappa {{student_class}} nel template
+
+  date: date,               // Questo mappa {{date}} nel template
+
+  message: text             // Questo mappa {{message}} nel template
+
+}).then(() => {
+
+  alert("Email inviata con successo!");
+
+}, (error) => {
+
+  alert("Errore nell'invio: " + JSON.stringify(error));
+
 });
 
-</script>
+});
+
+document.getElementById('checkBtn').addEventListener('click', function () {
+
+  const questions = document.querySelectorAll('.question');
+
+  questions.forEach((q) => {
+
+    const choices = q.querySelectorAll('input[type="radio"]');
+
+    choices.forEach((choice) => {
+
+      const isCorrect = choice.dataset.correct === "true";
+
+      if (choice.checked) {
+
+        choice.parentElement.style.backgroundColor = isCorrect ? "lightgreen" : "lightcoral";
+
+      } else {
+
+        choice.parentElement.style.backgroundColor = "";
+
+      }
+
+    });
+
+  });
+
+});
+
+
+
+
+
+  </script>
+
+
 
 </body>
 
