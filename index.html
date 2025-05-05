@@ -4,22 +4,17 @@
   <meta charset="UTF-8">
   <title>Quiz con Invio Email</title>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-  <script>
-    // Inizializza EmailJS con la tua chiave pubblica
-    (function() {
-      emailjs.init("orLnix6b43o8KC9NW"); // <-- La tua Public Key
-    })();
-  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> <!-- jsPDF -->
   <style>
     body { font-family: Arial; padding: 20px; }
     .question { margin-bottom: 15px; }
     .question p { margin-bottom: 5px; font-weight: bold; }
-    #sendEmail {
-      margin-top: 20px;
-    }
+    #sendEmail { margin-top: 20px; }
   </style>
 </head>
 <body>
+
+  <!-- Dati Studente -->
   <label>Nome: <input type="text" id="studentName" required></label><br>
   <label>Classe: <input type="text" id="studentClass" required></label><br>
   <label>Data: <input type="date" id="date" required></label><br><br>
@@ -169,68 +164,125 @@
     <label><input type="radio" name="q24" data-correct="false"> Cina e USA</label>
     <label><input type="radio" name="q24" data-correct="false"> URSS e Cina</label>
   </div>
-
-<button id="checkBtn">Correggi risposte</button>
+<div id="result"></div>
+  <button id="checkBtn">Correggi risposte</button>
   <button id="exportBtn">Esporta risposte</button>
   <button id="sendEmail">Invia Risposte via Email</button>
 
   <script>
-  document.getElementById('sendEmail').addEventListener('click', function () {
-    const name = document.getElementById('studentName').value;
-    const classe = document.getElementById('studentClass').value;
-    const date = document.getElementById('date').value;
+    // Inizializza EmailJS
+    (function() {
+      emailjs.init("orLnix6b43o8KC9NW");
+    })();
 
-    if (!name || !classe || !date) {
-      alert("Tutti i campi devono essere compilati!");
-      return;
-    }
+    document.getElementById('checkBtn').addEventListener('click', function () {
+      let score = 0;
 
-    // Disabilita il tasto Correggi risposte
-    document.getElementById('checkBtn').disabled = true;
-    
-    let text = `Nome: ${name}\nClasse: ${classe}\nData: ${date}\n\n`;
-    
-    // Il resto del codice per inviare l'email
-    emailjs.send("service_7kem7ei", "template_4uytzdn", {
-      from_name: name,
-      to_name: "Prof. Marchesan",
-      reply_to: "mauro.marchesan@icrilke.edu.it",
-      student_class: classe,
-      date: date,
-      message: text
-    }).then(() => {
-      alert("Email inviata con successo!");
+      for (let i = 1; i <= 24; i++) {
+        let choices = document.getElementsByName('q' + i);
+        choices.forEach(ch => ch.parentElement.classList.remove('correct', 'incorrect'));
 
-      // Dopo l'invio, abilita il tasto Correggi risposte
-      document.getElementById('checkBtn').disabled = false;
-      document.getElementById('exportBtn').disabled = false; // Abilita anche il tasto per esportare
-    }, (error) => {
-      alert("Errore nell'invio: " + JSON.stringify(error));
+        choices.forEach(ch => {
+          if (ch.checked) {
+            if (ch.dataset.correct === "true") {
+              score++;
+              ch.parentElement.classList.add('correct');
+            } else {
+              ch.parentElement.classList.add('incorrect');
+              choices.forEach(alt => {
+                if (alt.dataset.correct === "true") {
+                  alt.parentElement.classList.add('correct');
+                }
+              });
+            }
+          }
+        });
+      }
 
-      // Abilita il tasto Correggi risposte in caso di errore
-      document.getElementById('checkBtn').disabled = false;
+      document.getElementById('result').innerText = "Hai totalizzato " + score + " punti su 24.";
     });
-  });
 
-  document.getElementById('checkBtn').addEventListener('click', function () {
-    const questions = document.querySelectorAll('.question');
-    questions.forEach((q) => {
-      const choices = q.querySelectorAll('input[type="radio"]');
-      choices.forEach((choice) => {
-        const isCorrect = choice.dataset.correct === "true";
-        if (choice.checked) {
-          choice.parentElement.style.backgroundColor = isCorrect ? "lightgreen" : "lightcoral";
-        } else if (isCorrect) {
-          // Evidenziamo le risposte corrette in verde anche se non selezionate
-          choice.parentElement.style.backgroundColor = "lightgreen";
-        } else {
-          choice.parentElement.style.backgroundColor = "";
+    document.getElementById('exportBtn').addEventListener('click', function () {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      let text = "Nome: " + document.getElementById('studentName').value + "\n" +
+                 "Classe: " + document.getElementById('studentClass').value + "\n" +
+                 "Data: " + document.getElementById('date').value + "\n\n";
+
+      doc.text(text, 10, 10);
+      let yOffset = 30;
+
+      for (let i = 1; i <= 24; i++) {
+        let question = document.querySelectorAll('.question')[i - 1].querySelector('p').innerText;
+        let choices = document.getElementsByName('q' + i);
+        let selected = Array.from(choices).find(ch => ch.checked);
+        let answer = selected ? selected.parentElement.innerText.trim() : "Nessuna risposta";
+        let correctAnswer = Array.from(choices).find(ch => ch.dataset.correct === 'true').parentElement.innerText.trim();
+
+        let line = `${i}. ${question}\nRisposta: ${answer}\nRisposta corretta: ${correctAnswer}\n\n`;
+        doc.text(line, 10, yOffset);
+        yOffset += 40;
+      }
+
+      doc.save("risposte_verifica.pdf");
+    });
+
+    document.getElementById('sendEmail').addEventListener('click', function () {
+      const name = document.getElementById('studentName').value;
+      const classe = document.getElementById('studentClass').value;
+      const date = document.getElementById('date').value;
+
+      if (!name || !classe || !date) {
+        alert("Tutti i campi devono essere compilati!");
+        return;
+      }
+
+      const questions = document.querySelectorAll('.question');
+      for (let i = 0; i < questions.length; i++) {
+        const radios = questions[i].querySelectorAll('input[type="radio"]');
+        const oneChecked = Array.from(radios).some(r => r.checked);
+        if (!oneChecked) {
+          alert(`Devi rispondere a tutte le domande! La domanda ${i + 1} è incompleta.`);
+          return;
         }
+      }
+
+      document.getElementById('checkBtn').disabled = true;
+      document.getElementById('exportBtn').disabled = true;
+
+      let text = "Nome: " + name + "\n" +
+                 "Classe: " + classe + "\n" +
+                 "Data: " + date + "\n\n";
+
+      for (let i = 1; i <= 24; i++) {
+        let question = document.querySelectorAll('.question')[i - 1].querySelector('p').innerText;
+        let choices = document.getElementsByName('q' + i);
+        let selected = Array.from(choices).find(ch => ch.checked);
+        let answer = selected ? selected.parentElement.innerText.trim() : "Nessuna risposta";
+        let correctAnswer = Array.from(choices).find(ch => ch.dataset.correct === 'true').parentElement.innerText.trim();
+
+        text += `${i}. ${question}\nRisposta: ${answer}\nRisposta corretta: ${correctAnswer}\n\n`;
+      }
+
+      emailjs.send("service_7kem7ei", "template_4uytzdn", {
+        from_name: name,
+        to_name: "Prof. Marchesan",
+        reply_to: "mauro.marchesan@icrilke.edu.it",
+        student_class: classe,
+        date: date,
+        message: text
+      }).then(() => {
+        alert("Email inviata con successo!");
+        document.getElementById('checkBtn').disabled = false;
+        document.getElementById('exportBtn').disabled = false;
+      }, (error) => {
+        alert("Errore nell'invio: " + JSON.stringify(error));
+        document.getElementById('checkBtn').disabled = false;
+        document.getElementById('exportBtn').disabled = false;
       });
     });
-  });
   </script>
-
 </body>
 </html>
 <h1>👋 In bocca al lupo!<h1>
