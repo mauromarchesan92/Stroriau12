@@ -1,31 +1,59 @@
 <!DOCTYPE html>
+
 <html lang="it">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Verifica – Il mondo diviso in due</title>
+
 <style>
+
   body { font-family: Arial, sans-serif; margin: 20px; padding: 0; }
+
   .container { max-width: 800px; margin: auto; }
+
   h1 { text-align: center; }
+
   .question { margin-bottom: 1em; }
+
   .question p { font-weight: bold; }
+
   label { display: block; margin-left: 20px; cursor: pointer; }
+
   .correct { background-color: #c8e6c9; }   /* verde chiaro */
+
   .incorrect { background-color: #ffcdd2; } /* rosso chiaro */
+
   #result { margin-top: 20px; font-weight: bold; }
+
   button { margin: 10px 5px; padding: 8px 12px; }
+
 </style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 </head>
+
 <body>
+
 <div class="container">
+
   <h1>Verifica – Il mondo diviso in due</h1>
+
   <label>Nome e cognome: <input type="text" id="studentName"></label>
+
   <label>Classe: <input type="text" id="studentClass"></label>
+
   <label>Data: <input type="text" id="date"></label>
+
   <hr>
+
   <!-- Domande a scelta multipla -->
-  <div class="question">
+ <div class="question">
     <p>1. Quando scoppia la Guerra di Corea?</p>
     <label><input type="radio" name="q1" data-correct="false"> 1945</label>
     <label><input type="radio" name="q1" data-correct="true"> 1950</label>
@@ -169,14 +197,20 @@
     <label><input type="radio" name="q24" data-correct="false"> Cina e USA</label>
     <label><input type="radio" name="q24" data-correct="false"> URSS e Cina</label>
   </div>
+
   <!-- Pulsanti Azioni -->
   <button id="checkBtn">Correggi risposte</button>
+
   <button id="exportBtn">Esporta risposte</button>
+
   <div id="result"></div>
+
 </div>
 
 <script>
+
 document.getElementById('checkBtn').addEventListener('click', function() {
+
   let score = 0;
 
   for (let i = 1; i <= 24; i++) {
@@ -190,7 +224,6 @@ document.getElementById('checkBtn').addEventListener('click', function() {
     for (let ch of choices) {
       if (ch.checked) {
         answered = true;
-
         if (ch.getAttribute('data-correct') === 'true') {
           score++;
           ch.parentElement.classList.add('correct');
@@ -210,10 +243,20 @@ document.getElementById('checkBtn').addEventListener('click', function() {
 });
 
 document.getElementById('exportBtn').addEventListener('click', function () {
+  // Crea un'istanza di jsPDF
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
   let text = "Nome: " + document.getElementById('studentName').value + "\n" +
              "Classe: " + document.getElementById('studentClass').value + "\n" +
              "Data: " + document.getElementById('date').value + "\n\n";
 
+  // Aggiungi testo iniziale al PDF
+  doc.text(text, 10, 10);
+
+  let yOffset = 30;  // Posizione verticale di partenza
+
+  // Aggiungi le risposte delle domande
   for (let i = 1; i <= 24; i++) {
     let question = document.querySelectorAll('.question')[i - 1].querySelector('p').innerText;
     let choices = document.getElementsByName('q' + i);
@@ -223,18 +266,20 @@ document.getElementById('exportBtn').addEventListener('click', function () {
     // Trova la risposta corretta
     let correctAnswer = Array.from(choices).find(ch => ch.getAttribute('data-correct') === 'true').parentElement.innerText.trim();
 
-    text += i + ". " + question + "\nRisposta: " + answer + "\nRisposta corretta: " + correctAnswer + "\n\n";
+    text = `${i}. ${question}\nRisposta: ${answer}\nRisposta corretta: ${correctAnswer}\n\n`;
+
+    // Aggiungi la domanda e le risposte al PDF
+    doc.text(text, 10, yOffset);
+    yOffset += 40;  // Spazio verticale per la prossima domanda
   }
 
-  // Download file di testo
-  const blob = new Blob([text], { type: "text/plain" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "risposte_verifica.txt";
-  link.click();
+  // Esporta il PDF
+  doc.save("risposte_verifica.pdf");
 });
 
 </script>
+
 </body>
+
 </html>
 <h1>👋 In bocca al lupo!<h1>
