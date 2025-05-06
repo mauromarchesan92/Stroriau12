@@ -3,42 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <title>Verifica di storia</title>
- <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
-<script type="text/javascript">
-  window.onload = function () {
-    emailjs.init("lBgGe8Ka7HZQbBgth"); // il tuo user ID
-  };
-</script>
+
+  <!-- 1) Carica la SDK v3 di EmailJS -->
+  <script
+    type="text/javascript"
+    src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"
+  ></script>
+
+  <!-- 2) Inizializza EmailJS con la tua Public Key -->
+  <script type="text/javascript">
+    window.onload = function () {
+      emailjs.init("lBgGe8Ka7HZQbBgth");
+    };
+  </script>
+
+  <!-- 3) jsPDF per l’esportazione in PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   <style>
     button:disabled {
       background-color: #ccc;
       cursor: not-allowed;
     }
-    .correct {
-      color: green;
-    }
-    .incorrect {
-      color: red;
-    }
+    .correct { color: green; }
+    .incorrect { color: red; }
   </style>
 </head>
 <body>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-  }
-  .question {
-    margin-bottom: 15px;
-  }
-  label {
-
-    display: block;
-    margin: 4px 0;
-  }
-</style>
-
   <h1>Verifica di storia</h1>
 
   <!-- Dati Studente -->
@@ -193,116 +184,113 @@
     <label><input type="radio" name="q24" data-correct="false"> URSS e Cina</label>
   </div>
 
-  <button id="sendBtn">Invia via email</button>
+ <button id="sendBtn">Invia via email</button>
   <button id="checkBtn" disabled>Correggi risposte</button>
   <button id="exportBtn" disabled>Esporta risposte (PDF)</button>
 
- <script>
-  
-  // Variabile globale per il punteggio
-  let score = 0; // Definito globalmente
+  <script>
+  let score = 0;
 
-  // Funzione per ottenere tutte le risposte
   function getAllAnswers() {
     const questions = document.querySelectorAll('.question');
     let output = '';
-
-    questions.forEach((q, index) => {
-      const questionText = q.querySelector('p').innerText;
-      const selected = q.querySelector('input[type="radio"]:checked');
-      const answer = selected ? selected.parentElement.innerText.trim() : "Nessuna risposta";
-      output += `${index + 1}. ${questionText}\nRisposta: ${answer}\n\n`;
+    questions.forEach((q, i) => {
+      const text = q.querySelector('p').innerText;
+      const sel  = q.querySelector('input[type="radio"]:checked');
+      const ans  = sel ? sel.parentElement.innerText.trim() : "Nessuna risposta";
+      output += `${i+1}. ${text}\nRisposta: ${ans}\n\n`;
     });
-
     return output;
   }
 
-  // Gestore per il pulsante di invio email
-  document.getElementById("sendBtn").addEventListener("click", function () {
-    const name = document.getElementById("studentName").value.trim();
-    const studentClass = document.getElementById("studentClass").value.trim();
-    const date = document.getElementById("date").value;
-    const answers = getAllAnswers();
+  function calculateScore() {
+    score = 0;
+    document.querySelectorAll('.question').forEach(q => {
+      const sel = q.querySelector('input[type="radio"]:checked');
+      const cor = q.querySelector('input[data-correct="true"]');
+      if (sel === cor) score++;
+    });
+    return score;
+  }
 
-    if (!name || !studentClass || !date) {
-      alert("Per favore, compila tutti i campi.");
-      return;
+  // 1) INVIO EMAIL: includi anche il punteggio
+  document.getElementById("sendBtn").addEventListener("click", function() {
+    const name  = document.getElementById("studentName").value.trim();
+    const cls   = document.getElementById("studentClass").value.trim();
+    const dt    = document.getElementById("date").value;
+    const msg   = getAllAnswers();
+    const pts   = calculateScore();
+
+    if (!name || !cls || !dt) {
+      return alert("Per favore, compila tutti i campi.");
     }
-
     this.disabled = true;
 
-    emailjs.send("service_7kem7ei", "template_4uytzdn", {
-      to_name: "Professor Marchesan",
-      to_email: "mauro.marchesan@icrilke.edu.it",
-      from_name: name,
-      student_class: studentClass,
-      date: date,
-      message: answers
+    emailjs.send("service_7kem7ei","template_4uytzdn",{
+      to_name:       "Professor Marchesan",
+      to_email:      "mauro.marchesan@icrilke.edu.it",
+      from_name:     name,
+      student_class: cls,
+      date:          dt,
+      message:       msg + `Punteggio totale: ${pts} / 24`
     })
-    .then(() => {
+    .then(()=>{
       alert("Email inviata con successo!");
-      document.getElementById("checkBtn").disabled = false;
+      document.getElementById("checkBtn").disabled  = false;
       document.getElementById("exportBtn").disabled = false;
     })
-    .catch((error) => {
-      alert("Errore nell'invio dell'email: " + error.text);
-      document.getElementById("sendBtn").disabled = false;
+    .catch(e=>{
+      alert("Errore nell'invio dell'email: "+ e.text);
+      this.disabled = false;
     });
   });
 
-  // Gestore per il pulsante di correzione
-  document.getElementById("checkBtn").addEventListener("click", function () {
-    const questions = document.querySelectorAll('.question');
-    score = 0;  // Resetta il punteggio ogni volta che correggi
-
-    questions.forEach((q) => {
-      const selected = q.querySelector('input[type="radio"]:checked');
-      const correct = q.querySelector('input[data-correct="true"]');
-
-      if (selected) {
-        if (selected === correct) {
-          selected.parentElement.classList.add("correct");
-          score++;  // Incrementa il punteggio se la risposta è corretta
-        } else {
-          selected.parentElement.classList.add("incorrect");
-          correct.parentElement.classList.add("correct"); // Mostra anche la risposta giusta
-        }
+  // 2) CORREZIONE RESTA IDENTICA
+  document.getElementById("checkBtn").addEventListener("click", function() {
+    document.querySelectorAll('.question').forEach(q => {
+      const sel = q.querySelector('input[type="radio"]:checked');
+      const cor = q.querySelector('input[data-correct="true"]');
+      if (sel === cor) {
+        sel.parentElement.classList.add("correct");
       } else {
-        correct.parentElement.classList.add("correct"); // Mostra la risposta giusta anche se nulla è stato selezionato
+        if (sel) sel.parentElement.classList.add("incorrect");
+        cor.parentElement.classList.add("correct");
       }
     });
-
-    alert("Hai ottenuto " + score + " risposte corrette su " + questions.length);
+    alert(`Hai ottenuto ${calculateScore()} risposte corrette su ${document.querySelectorAll('.question').length}`);
   });
 
-  // Gestore per il pulsante di esportazione PDF
-  document.getElementById("exportBtn").addEventListener("click", function () {
+  // 3) ESPORTAZIONE PDF SU PIÙ PAGINE
+  document.getElementById("exportBtn").addEventListener("click", function() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+    const margin     = 10;
+    const lineHeight = 7;
+    const pageHeight = doc.internal.pageSize.height;
+    let cursorY     = margin;
 
-    const name = document.getElementById("studentName").value.trim();
-    const studentClass = document.getElementById("studentClass").value.trim();
-    const date = document.getElementById("date").value;
+    const name  = document.getElementById("studentName").value.trim();
+    const cls   = document.getElementById("studentClass").value.trim();
+    const dt    = document.getElementById("date").value;
+    let text = `Verifica di storia\n\nNome: ${name}\nClasse: ${cls}\nData: ${dt}\n\n`;
+    text += getAllAnswers();
+    text += `Punteggio totale: ${score} / ${document.querySelectorAll('.question').length}\n`;
 
-    const questions = document.querySelectorAll('.question');
-    let text = `Verifica di storia\n\nNome: ${name}\nClasse: ${studentClass}\nData: ${date}\n\n`;
+    // dividi in righe larghezza 180mm
+    const lines = doc.splitTextToSize(text, 180);
 
-    questions.forEach((q, index) => {
-      const questionText = q.querySelector('p').innerText;
-      const selected = q.querySelector('input[type="radio"]:checked');
-      const answer = selected ? selected.parentElement.innerText.trim() : "Nessuna risposta";
-      text += `${index + 1}. ${questionText}\nRisposta: ${answer}\n\n`;
+    lines.forEach(line => {
+      if (cursorY > pageHeight - margin) {
+        doc.addPage();
+        cursorY = margin;
+      }
+      doc.text(line, margin, cursorY);
+      cursorY += lineHeight;
     });
 
-    // Aggiungi il punteggio al testo del PDF
-    text += `Punteggio totale: ${score} / ${questions.length}\n`;
-
-    let lines = doc.splitTextToSize(text, 180); // 180 mm di larghezza
-    doc.text(lines, 10, 10);
     doc.save('verifica_storia.pdf');
   });
 </script>
-
 </body>
 </html>
 <h1>👋 In bocca al lupo!<h1>
