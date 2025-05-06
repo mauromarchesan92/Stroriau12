@@ -5,9 +5,9 @@
   <title>Verifica di storia</title>
  <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
 <script type="text/javascript">
-  (function () {
-    emailjs.init("orLnix6b43o8KC9NW"); // il tuo user ID
-  })();
+  window.onload = function () {
+    emailjs.init("lBgGe8Ka7HZQbBgth"); // il tuo user ID
+  };
 </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
@@ -33,6 +33,7 @@
     margin-bottom: 15px;
   }
   label {
+
     display: block;
     margin: 4px 0;
   }
@@ -196,97 +197,111 @@
   <button id="checkBtn" disabled>Correggi risposte</button>
   <button id="exportBtn" disabled>Esporta risposte (PDF)</button>
 
-  <script>
-    (function () {
-      emailjs.init("orLnix6b43o8KC9NW");
-    })();
+ <script>
+  
+  // Variabile globale per il punteggio
+  let score = 0; // Definito globalmente
 
-    function getAllAnswers() {
-      const questions = document.querySelectorAll('.question');
-      let output = '';
+  // Funzione per ottenere tutte le risposte
+  function getAllAnswers() {
+    const questions = document.querySelectorAll('.question');
+    let output = '';
 
-      questions.forEach((q, index) => {
-        const questionText = q.querySelector('p').innerText;
-        const selected = q.querySelector('input[type="radio"]:checked');
-        const answer = selected ? selected.parentElement.innerText.trim() : "Nessuna risposta";
-        output += `${index + 1}. ${questionText}\nRisposta: ${answer}\n\n`;
-      });
+    questions.forEach((q, index) => {
+      const questionText = q.querySelector('p').innerText;
+      const selected = q.querySelector('input[type="radio"]:checked');
+      const answer = selected ? selected.parentElement.innerText.trim() : "Nessuna risposta";
+      output += `${index + 1}. ${questionText}\nRisposta: ${answer}\n\n`;
+    });
 
-      return output;
+    return output;
+  }
+
+  // Gestore per il pulsante di invio email
+  document.getElementById("sendBtn").addEventListener("click", function () {
+    const name = document.getElementById("studentName").value.trim();
+    const studentClass = document.getElementById("studentClass").value.trim();
+    const date = document.getElementById("date").value;
+    const answers = getAllAnswers();
+
+    if (!name || !studentClass || !date) {
+      alert("Per favore, compila tutti i campi.");
+      return;
     }
 
-    document.getElementById("sendBtn").addEventListener("click", function () {
-      const name = document.getElementById("studentName").value.trim();
-      const studentClass = document.getElementById("studentClass").value.trim();
-      const date = document.getElementById("date").value;
-      const answers = getAllAnswers();
+    this.disabled = true;
 
-      if (!name || !studentClass || !date) {
-        alert("Per favore, compila tutti i campi.");
-        return;
-      }
-
-      this.disabled = true;
-
-      emailjs.send("service_7kem7ei", "template_4uytzdn", {
-        name: name,
-        student_class: studentClass,
-        date: date,
-        answers: answers,
-        to_email: "mauro.marchesan@icrilke.edu.it"
-      }).then(() => {
-        alert("Email inviata con successo!");
-        document.getElementById("checkBtn").disabled = false;
-        document.getElementById("exportBtn").disabled = false;
-      }, (error) => {
-        alert("Errore nell'invio dell'email: " + error.text);
-        document.getElementById("sendBtn").disabled = false;
-      });
+    emailjs.send("service_7kem7ei", "template_4uytzdn", {
+      to_name: "Professor Marchesan",
+      to_email: "mauro.marchesan@icrilke.edu.it",
+      from_name: name,
+      student_class: studentClass,
+      date: date,
+      message: answers
+    })
+    .then(() => {
+      alert("Email inviata con successo!");
+      document.getElementById("checkBtn").disabled = false;
+      document.getElementById("exportBtn").disabled = false;
+    })
+    .catch((error) => {
+      alert("Errore nell'invio dell'email: " + error.text);
+      document.getElementById("sendBtn").disabled = false;
     });
+  });
 
-    document.getElementById("checkBtn").addEventListener("click", function () {
-      const questions = document.querySelectorAll('.question');
-      let score = 0;
+  // Gestore per il pulsante di correzione
+  document.getElementById("checkBtn").addEventListener("click", function () {
+    const questions = document.querySelectorAll('.question');
+    score = 0;  // Resetta il punteggio ogni volta che correggi
 
-      questions.forEach((q) => {
-        const selected = q.querySelector('input[type="radio"]:checked');
-        const correct = q.querySelector('input[data-correct="true"]');
+    questions.forEach((q) => {
+      const selected = q.querySelector('input[type="radio"]:checked');
+      const correct = q.querySelector('input[data-correct="true"]');
 
-        if (selected) {
-          if (selected === correct) {
-            selected.parentElement.classList.add('correct');
-            score++;
-          } else {
-            selected.parentElement.classList.add('incorrect');
-          }
+      if (selected) {
+        if (selected === correct) {
+          selected.parentElement.classList.add("correct");
+          score++;  // Incrementa il punteggio se la risposta è corretta
+        } else {
+          selected.parentElement.classList.add("incorrect");
+          correct.parentElement.classList.add("correct"); // Mostra anche la risposta giusta
         }
-      });
-
-      alert("Hai ottenuto " + score + " risposte corrette su " + questions.length);
+      } else {
+        correct.parentElement.classList.add("correct"); // Mostra la risposta giusta anche se nulla è stato selezionato
+      }
     });
 
-    document.getElementById("exportBtn").addEventListener("click", function () {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
+    alert("Hai ottenuto " + score + " risposte corrette su " + questions.length);
+  });
 
-      const name = document.getElementById("studentName").value.trim();
-      const studentClass = document.getElementById("studentClass").value.trim();
-      const date = document.getElementById("date").value;
+  // Gestore per il pulsante di esportazione PDF
+  document.getElementById("exportBtn").addEventListener("click", function () {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
 
-      const questions = document.querySelectorAll('.question');
-      let text = `Verifica di storia\n\nNome: ${name}\nClasse: ${studentClass}\nData: ${date}\n\n`;
+    const name = document.getElementById("studentName").value.trim();
+    const studentClass = document.getElementById("studentClass").value.trim();
+    const date = document.getElementById("date").value;
 
-      questions.forEach((q, index) => {
-        const questionText = q.querySelector('p').innerText;
-        const selected = q.querySelector('input[type="radio"]:checked');
-        const answer = selected ? selected.parentElement.innerText.trim() : "Nessuna risposta";
-        text += `${index + 1}. ${questionText}\nRisposta: ${answer}\n\n`;
-      });
+    const questions = document.querySelectorAll('.question');
+    let text = `Verifica di storia\n\nNome: ${name}\nClasse: ${studentClass}\nData: ${date}\n\n`;
 
-      doc.text(text, 10, 10);
-      doc.save('verifica_storia.pdf');
+    questions.forEach((q, index) => {
+      const questionText = q.querySelector('p').innerText;
+      const selected = q.querySelector('input[type="radio"]:checked');
+      const answer = selected ? selected.parentElement.innerText.trim() : "Nessuna risposta";
+      text += `${index + 1}. ${questionText}\nRisposta: ${answer}\n\n`;
     });
-  </script>
+
+    // Aggiungi il punteggio al testo del PDF
+    text += `Punteggio totale: ${score} / ${questions.length}\n`;
+
+    let lines = doc.splitTextToSize(text, 180); // 180 mm di larghezza
+    doc.text(lines, 10, 10);
+    doc.save('verifica_storia.pdf');
+  });
+</script>
 
 </body>
 </html>
